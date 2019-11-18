@@ -10,6 +10,8 @@ const morgan = require("morgan");
 
 const app = express();
 
+const spotifyRouter = require("./routes/spotify");
+
 // App Middleware
 const whitelist = ["http://localhost:3001"];
 const corsOptions = {
@@ -26,16 +28,14 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(morgan("combined"));
 
-const spotifyApi = new SpotifyWebApi({
-  clientId: process.env.SPOTIFY_API_ID,
-  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-  redirectUri: process.env.CALLBACK_URL
-});
+// TODO error handler
 
 // App Routes
-app.get("/", (req, res) => res.send("hello world"));
+app.use("/", spotifyRouter);
 
 // App Server Connection
 app.listen(process.env.PORT || 3000, () => {
   console.log(`app is running on port ${process.env.PORT || 3000}`);
 });
+
+module.exports = app;
