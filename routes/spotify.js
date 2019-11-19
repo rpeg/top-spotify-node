@@ -40,9 +40,9 @@ router.get("/callback", async (req, res) => {
 router.get("/my-top-artists", async (req, res) => {
   try {
     const options = {
-      time_range: req.params.time_range,
-      limit: req.params.limit,
-      offset: req.params.offset
+      time_range: req.query.time_range,
+      limit: req.query.limit,
+      offset: req.query.offset
     }
     const result = await spotifyApi.getMyTopArtists(options);
     console.log(result.body);
