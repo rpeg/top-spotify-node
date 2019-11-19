@@ -43,12 +43,37 @@ router.get("/my-top-artists", async (req, res) => {
       time_range: req.query.time_range,
       limit: req.query.limit,
       offset: req.query.offset
-    }
+    };
     const result = await spotifyApi.getMyTopArtists(options);
     console.log(result.body);
     res.status(200).send(result.body);
   } catch (err) {
-    res.status(400).send(err)
+    res.status(400).send(err);
+  }
+});
+
+router.get("/my-top-tracks", async (req, res) => {
+  try {
+    const options = {
+      time_range: req.query.time_range,
+      limit: req.query.limit,
+      offset: req.query.offset
+    };
+    const result = await spotifyApi.getMyTopTracks(options);
+    console.log(result.body);
+    res.status(200).send(result.body);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+router.get("/my-profile", async (req, res) => {
+  try {
+    const result = await spotifyApi.getMe();
+    console.log(result.body);
+    res.status(200).send(result.body);
+  } catch (err) {
+    res.status(400).send(err);
   }
 });
 
