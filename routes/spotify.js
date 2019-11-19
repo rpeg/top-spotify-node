@@ -13,13 +13,13 @@ const spotifyApi = new SpotifyWebApi({
 });
 
 router.get("/", function(req, res, next) {
-  res.render("index", { title: "Top Spotify Node" });
+  res.json({ title: "Top Spotify Node" });
 });
 
 router.get("/login", (req, res) => {
-  const html = spotifyApi.createAuthorizeURL(scopes);
-  console.log(html);
-  res.send(html + "&show_dialog=true");
+  const authUrl = spotifyApi.createAuthorizeURL(scopes);
+  console.log(authUrl);
+  res.send(authUrl + "&show_dialog=true");
 });
 
 router.get("/callback", async (req, res) => {
@@ -31,7 +31,7 @@ router.get("/callback", async (req, res) => {
     spotifyApi.setAccessToken(access_token);
     spotifyApi.setRefreshToken(refresh_token);
 
-    res.redirect("http://localhost:3001/my-top-artists");
+    res.redirect("http://localhost:3001/");
   } catch (err) {
     res.redirect("/#/error/invalid token");
   }
@@ -51,3 +51,5 @@ router.get("/my-top-artists", async (req, res) => {
     res.status(400).send(err)
   }
 });
+
+module.exports = router;
