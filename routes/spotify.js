@@ -31,9 +31,20 @@ router.get("/callback", async (req, res) => {
     spotifyApi.setAccessToken(access_token);
     spotifyApi.setRefreshToken(refresh_token);
 
-    res.redirect("http://localhost:3001/");
+    res.redirect(`http://localhost:3001/?login=1`);
   } catch (err) {
     res.redirect("/#/error/invalid token");
+  }
+});
+
+router.get("/track-features", async (req, res) => {
+  try {
+    const ids = [req.query.ids];
+    const result = await spotifyApi.getAudioFeaturesForTracks(ids);
+    console.log(result.body);
+    res.status(200).send(result.body);
+  } catch (err) {
+    res.status(400).send(err);
   }
 });
 
