@@ -41,7 +41,6 @@ router.get("/track-features", async (req, res) => {
   try {
     const ids = [req.query.ids];
     const result = await spotifyApi.getAudioFeaturesForTracks(ids);
-    console.log(result.body);
     res.status(200).send(result.body);
   } catch (err) {
     res.status(400).send(err);
@@ -56,7 +55,6 @@ router.get("/my-top-artists", async (req, res) => {
       offset: req.query.offset
     };
     const result = await spotifyApi.getMyTopArtists(options);
-    console.log(result.body);
     res.status(200).send(result.body);
   } catch (err) {
     res.status(400).send(err);
@@ -71,7 +69,6 @@ router.get("/my-top-tracks", async (req, res) => {
       offset: req.query.offset
     };
     const result = await spotifyApi.getMyTopTracks(options);
-    console.log(result.body);
     res.status(200).send(result.body);
   } catch (err) {
     res.status(400).send(err);
@@ -81,7 +78,6 @@ router.get("/my-top-tracks", async (req, res) => {
 router.get("/my-profile", async (req, res) => {
   try {
     const result = await spotifyApi.getMe();
-    console.log(result.body);
     res.status(200).send(result.body);
   } catch (err) {
     res.status(400).send(err);
