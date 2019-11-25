@@ -17,9 +17,7 @@ const addSocketIdtoSession = (req, res, next) => {
   next();
 };
 
-router.get("/", function(req, res, next) {
-  res.json({ title: "Top Spotify Node" });
-});
+router.get("/", addSocketIdtoSession, spotifyAuth);
 
 router.get("/auth/login", addSocketIdtoSession, spotifyAuth);
 

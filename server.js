@@ -15,21 +15,17 @@ const { CLIENT_ORIGIN } = require("./config");
 
 const app = express();
 const server = http.createServer(app);
+const io = socketio(server);
 
-app.use(helmet());
+app.use(express.json());
+app.use(passport.initialize());
+passportInit();
+
 app.use(
   cors({
     origin: CLIENT_ORIGIN
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(morgan("combined"));
-
-app.use(passport.initialize());
-passportInit();
 
 app.use(
   session({
@@ -39,12 +35,16 @@ app.use(
   })
 );
 
-const io = socketio(server);
-app.set("io", io);
+app.use(helmet());
+app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(morgan("combined"));
 
+app.set("io", io);
 app.use("/", spotifyRouter);
 
-app.listen(process.env.PORT || 3000, () => {
+server.listen(process.env.PORT || 3000, () => {
   console.log(`app is running on port ${process.env.PORT || 3000}`);
 });
 
