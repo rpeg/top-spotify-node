@@ -2,10 +2,12 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const SpotifyApi = require("../lib/spotify-api");
+const _ = require("lodash");
 
 require("dotenv").config();
 
 const DEF_PERSONALIZATION_LIMIT = 20
+const FEATURE_LIMIT = 100
 
 const spotifyApi = new SpotifyApi().getInstance();
 
@@ -101,14 +103,29 @@ router.get("/api/my-top-tracks", addSocketIdtoSession, async (req, res) => {
     });
 });
 
-router.get("/api/track-features", async (req, res) => {
-  try {
-    const ids = [req.query.ids];
-    const result = await spotifyApi.getAudioFeaturesForTracks(ids);
-    res.status(200).send(result.body);
-  } catch (err) {
-    res.status(400).send(err);
+router.get("/api/track-features", addSocketIdtoSession, async (req, res) => {
+  const io = req.app.get("io");
+
+  const chunkedIds = _.chunk(req.query.ids, FEATURE_LIMIT)
+  const promises = [];
+
+  for (let i = 0; i < chunkedIds.length; i++) {
+    promises.push(spotifyApi.getAudioFeaturesForTracks(chunkedIds[i]));
   }
+
+  await Promise.all(promises)
+    .then((results) => {
+      const result = {
+        items: results.map(r => r.body.audio_features).flat(),
+        range: req.query.time_range
+      };
+
+      io.in(req.session.socketId).emit('features', result);
+    })
+    .catch((err) => {
+      console.log(err)
+      io.in(req.session.socketId).emit('error', err);
+    });
 });
 
 module.exports = router;
