@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const SpotifyApi = require("../lib/spotify-api");
-const authController = require("../lib/auth.controller");
 
 require("dotenv").config();
 
@@ -21,29 +20,49 @@ router.get("/", addSocketIdtoSession, spotifyAuth);
 
 router.get("/auth/login", addSocketIdtoSession, spotifyAuth);
 
-router.get("/auth/callback", spotifyAuth, authController.spotify);
+router.get("/auth/callback", spotifyAuth, async (req, res) => {
+  const io = req.app.get("io");
 
-router.get("/api/my-profile", async (req, res) => {
-  try {
-    const result = await spotifyApi.getMe();
-    res.status(200).send(result.body);
-  } catch (err) {
-    res.status(400).send(err);
-  }
+  const user = {
+    id: req.user.id,
+    image: req.user.photos[0]
+  };
+  
+  io.in(req.session.socketId).emit('spotifyUser', user);
 });
 
-router.get("/api/my-top-artists", async (req, res) => {
-  try {
+// Fetches `n` artists in accordance with limit, emitting an aggregate result
+// Note: Spotify does not currently provide >50 results, but may change this in the future.
+router.get("/api/my-top-artists", addSocketIdtoSession, async (req, res) => {
+  const io = req.app.get("io");
+
+  const limit = req.query.limit ? parseInt(req.query.limit) : 20;
+  const n = req.query.n ? req.query.n : limit;
+  const promises = [];
+
+  for (let i = 0; i <= n; i += limit) {
     const options = {
       time_range: req.query.time_range,
       limit: req.query.limit,
-      offset: req.query.offset
+      offset: i
     };
-    const result = await spotifyApi.getMyTopArtists(options);
-    res.status(200).send(result.body);
-  } catch (err) {
-    res.status(400).send(err);
+
+    promises.push(spotifyApi.getMyTopArtists(options));
   }
+
+  await Promise.all(promises)
+    .then((results) => {
+      const result = {
+        items: results.map(r => r.body.items).flat(),
+        range: req.query.time_range
+      };
+
+      io.in(req.session.socketId).emit('topArtists', result);
+    })
+    .catch((err) => {
+      console.log(err)
+      io.in(req.session.socketId).emit('error', err);
+    });
 });
 
 router.get("/api/my-top-tracks", async (req, res) => {
