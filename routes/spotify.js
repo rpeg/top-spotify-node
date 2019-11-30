@@ -38,7 +38,7 @@ router.get('/auth/callback', spotifyAuth, async (req) => {
 
 // Fetches `n` artists in accordance with limit, emitting an aggregate result
 // Note: Spotify does not currently provide >50 results, but may change this in the future.
-router.get('/api/my-top-artists', addSocketIdtoSession, async (req, res) => {
+router.get('/api/my-top-artists', async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit, 10) : DEF_PERSONALIZATION_LIMIT;
   const n = req.query.n ? req.query.n : limit;
   const promises = [];
@@ -71,7 +71,7 @@ router.get('/api/my-top-artists', addSocketIdtoSession, async (req, res) => {
 
 // Fetches `n` tracks in accordance with limit, emitting an aggregate result
 // Note: Spotify does not currently provide >50 results, but may change this in the future.
-router.get('/api/my-top-tracks', addSocketIdtoSession, async (req, res) => {
+router.get('/api/my-top-tracks', async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit, 10) : DEF_PERSONALIZATION_LIMIT;
   const n = req.query.n ? req.query.n : limit;
   const promises = [];
@@ -102,9 +102,11 @@ router.get('/api/my-top-tracks', addSocketIdtoSession, async (req, res) => {
     });
 });
 
-router.get('/api/track-features', addSocketIdtoSession, async (req, res) => {
-  const chunkedIds = chunk(req.query.ids, FEATURE_LIMIT);
+router.get('/api/track-features', async (req, res) => {
+  const chunkedIds = chunk(req.query.ids.split(','), FEATURE_LIMIT);
   const promises = [];
+
+  console.log(chunkedIds);
 
   for (let i = 0; i < chunkedIds.length; i += 1) {
     promises.push(spotifyApi.getAudioFeaturesForTracks(chunkedIds[i]));
