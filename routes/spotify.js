@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const passport = require('passport');
-const _ = require('lodash');
+const chunk = require('lodash/chunk');
 const SpotifyApi = require('../lib/spotify-api');
 
 require('dotenv').config();
@@ -25,7 +25,7 @@ router.get('/', addSocketIdtoSession, spotifyAuth);
 
 router.get('/auth/login', addSocketIdtoSession, spotifyAuth);
 
-router.get('/auth/callback', spotifyAuth, async (req, res) => {
+router.get('/auth/callback', spotifyAuth, async (req) => {
   const io = req.app.get('io');
 
   const user = {
@@ -39,9 +39,7 @@ router.get('/auth/callback', spotifyAuth, async (req, res) => {
 // Fetches `n` artists in accordance with limit, emitting an aggregate result
 // Note: Spotify does not currently provide >50 results, but may change this in the future.
 router.get('/api/my-top-artists', addSocketIdtoSession, async (req, res) => {
-  const io = req.app.get('io');
-
-  const limit = req.query.limit ? parseInt(req.query.limit) : DEF_PERSONALIZATION_LIMIT;
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : DEF_PERSONALIZATION_LIMIT;
   const n = req.query.n ? req.query.n : limit;
   const promises = [];
 
@@ -62,20 +60,19 @@ router.get('/api/my-top-artists', addSocketIdtoSession, async (req, res) => {
         range: req.query.time_range,
       };
 
-      io.in(req.session.socketId).emit('topArtists', result);
+      res.status(200).send(result);
     })
     .catch((err) => {
       console.log(err);
-      io.in(req.session.socketId).emit('error', err);
+
+      res.status(400).send(err);
     });
 });
 
 // Fetches `n` tracks in accordance with limit, emitting an aggregate result
 // Note: Spotify does not currently provide >50 results, but may change this in the future.
 router.get('/api/my-top-tracks', addSocketIdtoSession, async (req, res) => {
-  const io = req.app.get('io');
-
-  const limit = req.query.limit ? parseInt(req.query.limit) : DEF_PERSONALIZATION_LIMIT;
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : DEF_PERSONALIZATION_LIMIT;
   const n = req.query.n ? req.query.n : limit;
   const promises = [];
 
@@ -96,21 +93,20 @@ router.get('/api/my-top-tracks', addSocketIdtoSession, async (req, res) => {
         range: req.query.time_range,
       };
 
-      io.in(req.session.socketId).emit('topTracks', result);
+      res.status(200).send(result);
     })
     .catch((err) => {
       console.log(err);
-      io.in(req.session.socketId).emit('error', err);
+
+      res.status(400).send(err);
     });
 });
 
 router.get('/api/track-features', addSocketIdtoSession, async (req, res) => {
-  const io = req.app.get('io');
-
-  const chunkedIds = _.chunk(req.query.ids, FEATURE_LIMIT);
+  const chunkedIds = chunk(req.query.ids, FEATURE_LIMIT);
   const promises = [];
 
-  for (let i = 0; i < chunkedIds.length; i++) {
+  for (let i = 0; i < chunkedIds.length; i += 1) {
     promises.push(spotifyApi.getAudioFeaturesForTracks(chunkedIds[i]));
   }
 
@@ -121,11 +117,12 @@ router.get('/api/track-features', addSocketIdtoSession, async (req, res) => {
         range: req.query.time_range,
       };
 
-      io.in(req.session.socketId).emit('features', result);
+      res.status(200).send(result);
     })
     .catch((err) => {
       console.log(err);
-      io.in(req.session.socketId).emit('error', err);
+
+      res.status(400).send(err);
     });
 });
 

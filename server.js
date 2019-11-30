@@ -8,6 +8,7 @@ const http = require('http');
 const morgan = require('morgan');
 const session = require('express-session');
 const passport = require('passport');
+const compression = require('compression');
 
 const passportInit = require('./lib/passport.init');
 const spotifyRouter = require('./routes/spotify');
@@ -36,6 +37,7 @@ app.use(
 );
 
 app.use(helmet());
+app.use(compression());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
