@@ -106,8 +106,6 @@ router.get('/api/track-features', async (req, res) => {
   const chunkedIds = chunk(req.query.ids.split(','), FEATURE_LIMIT);
   const promises = [];
 
-  console.log(chunkedIds);
-
   for (let i = 0; i < chunkedIds.length; i += 1) {
     promises.push(spotifyApi.getAudioFeaturesForTracks(chunkedIds[i]));
   }
