@@ -26,6 +26,9 @@
     "spotify-web-api-node": "4.0.0"
   },
   "devDependencies": {
+    "eslint": "6.7.1",
+    "eslint-config-airbnb-base": "14.0.0",
+    "eslint-plugin-import": "2.18.2",
     "nodemon": "1.19.4"
   }
 }
