@@ -1,6 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
+const axios = require('axios');
 const passport = require('passport');
 const chunk = require('lodash/chunk');
 const SpotifyApi = require('../lib/spotify-api');
@@ -119,6 +120,49 @@ router.get('/api/track-features', async (req, res) => {
 
       res.status(200).send(result);
     })
+    .catch((err) => {
+      console.log(err);
+
+      res.status(400).send(err);
+    });
+});
+
+// MusicBrainz allows 50 requests per second
+router.get('/api/artist-countries', async (req, res) => {
+  const names = req.query.names.split(',');
+  const requests = [];
+
+  names.forEach((name) => {
+    requests.push(axios.get(
+      `https://musicbrainz.org/ws/2/artist?query=%22${name}%22&fmt=json`, {
+        headers: {
+          'User-Agent': process.env.CONTACT,
+        },
+      },
+    ));
+  });
+
+  await axios
+    .all(requests)
+    .then(axios.spread((...responses) => {
+      const artistCountries = [];
+
+      responses.forEach((r) => {
+        const artist = r.artists ? r.artists[0] : null;
+        if (artist && artist.country) {
+          artistCountries.push({
+            name: artist.name,
+            country: artist.country,
+          });
+        }
+      });
+
+      const result = {
+        items: artistCountries,
+      };
+
+      res.status(200).send(result);
+    }))
     .catch((err) => {
       console.log(err);
 
