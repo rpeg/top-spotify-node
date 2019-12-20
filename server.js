@@ -11,6 +11,7 @@ const passport = require('passport');
 const compression = require('compression');
 
 const passportInit = require('./lib/passport.init');
+const mbRouter = require('./routes/musicbrainz');
 const spotifyRouter = require('./routes/spotify');
 const { CLIENT_ORIGIN } = require('./config');
 
@@ -44,7 +45,8 @@ app.use(bodyParser.json());
 app.use(morgan('combined'));
 
 app.set('io', io);
-app.use('/', spotifyRouter);
+app.use('/spotify/', spotifyRouter);
+app.use('/musicbrainz/', mbRouter);
 
 server.listen(process.env.PORT || 3000, () => {
   console.log(`app is running on port ${process.env.PORT || 3000}`);

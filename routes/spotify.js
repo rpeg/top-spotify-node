@@ -36,6 +36,33 @@ router.get('/auth/callback', spotifyAuth, async (req) => {
   io.in(req.session.socketId).emit('spotifyUser', user);
 });
 
+// Fetches albums by each artist; returns one per artist
+router.get('/api/albums-by-artists', async (req, res) => {
+  const ids = req.query.ids.split(',');
+
+  const promises = [];
+
+  const options = {
+    include_groups: 'album',
+  };
+
+  ids.map((id) => promises.push(spotifyApi.getArtistAlbums(id, options)));
+
+  await Promise.all(promises)
+    .then((results) => {
+      const result = {
+        items: results.map((r) => r.body.items[0]).flat(),
+      };
+
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      console.log(err);
+
+      res.status(400).send(err);
+    });
+});
+
 // Fetches `n` artists in accordance with limit, emitting an aggregate result
 // Note: Spotify does not currently provide >50 results, but may change this in the future.
 router.get('/api/my-top-artists', async (req, res) => {
