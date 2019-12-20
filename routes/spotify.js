@@ -16,6 +16,13 @@ const spotifyAuth = passport.authenticate('spotify', {
   scope: ['user-top-read'],
 });
 
+// get album from release array if possible; defaults to first item
+const getAlbumFromReleases = (releases) => {
+  const album = releases.find((r) => r.album_type === 'album');
+
+  return album || releases[0];
+};
+
 const addSocketIdtoSession = (req, res, next) => {
   req.session.socketId = req.query.socketId;
   next();
@@ -42,16 +49,12 @@ router.get('/api/albums-by-artists', async (req, res) => {
 
   const promises = [];
 
-  const options = {
-    include_groups: 'album',
-  };
-
-  ids.map((id) => promises.push(spotifyApi.getArtistAlbums(id, options)));
+  ids.map((id) => promises.push(spotifyApi.getArtistAlbums(id)));
 
   await Promise.all(promises)
     .then((results) => {
       const result = {
-        items: results.map((r) => r.body.items[0]).flat(),
+        items: results.map((r) => getAlbumFromReleases(r.body.items)).flat(),
       };
 
       res.status(200).send(result);
