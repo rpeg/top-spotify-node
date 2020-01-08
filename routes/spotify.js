@@ -51,7 +51,8 @@ router.get('/api/albums-by-artists', async (req, res) => {
 
   ids.map((id) => promises.push(spotifyApi.getArtistAlbums(id)));
 
-  await Promise.all(promises)
+  // ignore rejections -- Spotify API randomly returns 404 on some requests to this endpoint
+  await Promise.all(promises.map((p) => p.catch(() => undefined)))
     .then((results) => {
       const result = {
         items: results.map((r) => getAlbumFromReleases(r.body.items)).flat(),
