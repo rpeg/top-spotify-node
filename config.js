@@ -1,5 +1,5 @@
 exports.CLIENT_ORIGIN = process.env.NODE_ENV === 'production'
-  ? /.*topspot.netlify.com/
+  ? /.*topspot.netlify.app/
   : ['http://localhost:3001/', /.*3001.*/];
 
 exports.SPOTIFY_CONFIG = {
