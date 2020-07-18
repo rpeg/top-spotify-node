@@ -19,7 +19,7 @@
     "express-session": "1.17.0",
     "helmet": "3.21.2",
     "http": "0.0.0",
-    "lodash": "4.17.15",
+    "lodash": "4.17.19",
     "morgan": "1.9.1",
     "passport": "0.4.0",
     "passport-spotify": "1.1.0",
